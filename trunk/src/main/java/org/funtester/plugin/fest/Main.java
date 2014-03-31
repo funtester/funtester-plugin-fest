@@ -12,6 +12,7 @@ import org.funtester.common.generation.TestGenerationConfiguration;
 import org.funtester.common.generation.TestGenerationConfigurationRepository;
 import org.funtester.common.report.TestCaseExecution;
 import org.funtester.common.report.TestExecutionReport;
+import org.funtester.common.report.TestExecutionReportRepository;
 import org.funtester.common.report.TestExecutionStatus;
 import org.funtester.common.report.TestMethodExecution;
 import org.funtester.common.report.TestSuiteExecution;
@@ -25,6 +26,7 @@ import org.funtester.common.util.TimeConverter;
 import org.funtester.plugin.fest.json.JsonMapper;
 import org.funtester.plugin.fest.model.FestSwingCodeGenerator;
 import org.funtester.plugin.fest.model.JsonSemanticTestSuiteRepository;
+import org.funtester.plugin.fest.model.JsonTestExecutionReportRepository;
 import org.funtester.plugin.fest.model.JsonTestGenerationConfigurationRepository;
 import org.funtester.plugin.fest.model.SemanticTestSuiteRepository;
 import org.funtester.plugin.fest.model.TransformException;
@@ -224,7 +226,7 @@ public class Main {
 						cfg.getOutputDirectory(),
 						cfg.getMainClass(),
 						cfg.getPackageName(),
-						cfg.getTimeoutToBeVisibleInMS()
+						cfg.getTimeoutInMS()
 						) );
 			} catch ( TransformException e ) {
 				// TODO Auto-generated catch block
@@ -241,7 +243,7 @@ public class Main {
 		//
 		
 		if ( isToRunTests ) {		
-			final boolean isToRunCommands = cfg.isToRunCommands();			 
+			final boolean isToRunCommands = cfg.getRun();
 			if ( isToRunCommands ) {		
 				if ( cfg.getCommandsToRun().size() < 1 ) {
 					out( "There are no commands to run." );
@@ -269,15 +271,17 @@ public class Main {
 			
 					
 			
-			if ( cfg.isToTryToRunTheTestsInternally() ) {
+			if ( cfg.getTryToRunInternally() ) {
 				
 				// TODO
 				
 			} else if ( ! isToRunCommands ) {
-				out( "It was configured to not run any command nor the tests. Please adjust the configuration and try again." );
-				terminate();
+				//out( "It was configured to not run any command nor the tests. Please adjust the configuration and try again." );
+				//terminate();
 			}
 		}
+		
+		out( "Reading report..." );
 		
 		final long ANALYSIS_START_TIME = System.currentTimeMillis();
 				
@@ -457,12 +461,16 @@ public class Main {
 		} // for suite
 		
 		logger.info( "Converting results to JSON..." );
-				
+		
 		//
 		// Converting the report to a JSON file
 		//
+		
+		TestExecutionReportRepository reportRepository =
+				new JsonTestExecutionReportRepository( cfg.getConvertedResultsFile() );
+				
 		try {
-			JsonMapper.writeObject( cfg.getConvertedResultsFile(), report );
+			reportRepository.save( report );
 		} catch ( Exception e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
