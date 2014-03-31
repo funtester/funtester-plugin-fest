@@ -1,6 +1,7 @@
 package org.funtester.plugin.fest.xml;
 
 import java.io.File;
+import java.io.FileReader;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
@@ -36,16 +37,16 @@ public class XmlReader {
 		// ---------------------------------------------------------------------
 		*/
 		
-		return xmlMapper.readValue( new File( fileName ), clazz );			
+		return xmlMapper.readValue( new File( fileName ), clazz );
 	}
 	
 	public < T > T readObject2(
 			final String fileName,
 			final Class< T > clazz
-			) throws Exception {	
+			) throws Exception {
 		JAXBContext jc = JAXBContext.newInstance( clazz );
-        File xml = new File( fileName );
-        Unmarshaller unmarshaller = jc.createUnmarshaller();
-        return (T) unmarshaller.unmarshal(xml);
+		Unmarshaller unmarshaller = jc.createUnmarshaller();
+		FileReader fileReader = new FileReader( fileName );
+		return (T) unmarshaller.unmarshal( fileReader );
 	}
 }
