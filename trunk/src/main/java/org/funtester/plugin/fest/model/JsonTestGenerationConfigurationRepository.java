@@ -21,5 +21,9 @@ public class JsonTestGenerationConfigurationRepository implements TestGeneration
 	public TestGenerationConfiguration first() throws Exception {
 		return JsonMapper.readObject( filePath, TestGenerationConfiguration.class );
 	}
+	
+	public void save(TestGenerationConfiguration obj) throws Exception {
+		JsonMapper.writeObject( filePath, obj );
+	}	
 
 }
