@@ -7,7 +7,7 @@ public class FESTWidgetQuery {
 	// dialog, frame, {textbox, text, edit}, button, {menu, menuitem, submenu},
 	// {message, dialog}, key, {table, grid},
 	// {combobox, combo, select, selectbox}, {checkbox, check},
-	// {radio, radiobutton}, {list, listbox}
+	// {radio, radiobutton}, {list, listbox}, tree
 	//
 	
 	public static boolean isDialog(final String elementType) {
@@ -46,6 +46,10 @@ public class FESTWidgetQuery {
 	public static boolean isTable(final String elementType) {
 		return elementType.equalsIgnoreCase( "table" )
 			|| elementType.equalsIgnoreCase( "grid" );
+	}
+	
+	public static boolean isTree(final String elementType) {
+		return elementType.equalsIgnoreCase( "tree" );
 	}
 
 	public static boolean isComboBox(final String elementType) {

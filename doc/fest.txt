@@ -1,0 +1,98 @@
+--------------
+background
+button
+checkBox
+comboBox
+dialog
+fileChooser <
+focus
+font
+foreground
+label
+list
+menuItem
+optionPane
+panel <
+pressAndReleaseKey
+pressKey
+progressBar <
+radioButton
+releaseKey
+requireDisabled
+requireEnabled
+requireFocused
+requireNotVisible
+requireSize
+requireVisible
+requireHeightTo
+requireWidthTo
+scrollBar <
+scrollPane <
+slider <
+spinner <
+splitPanel <
+tabbedPane <
+table
+textBox
+toggleButton <
+toolBar <
+tree <
+-----------------
+
+[Tree]
+
+clickPath( "" )
+clickRow( 0 )
+collapsePath( "" )
+collapseRow( 0 )
+doubleClickPath( "" )
+doubleClickRow( 0 )
+drag( "" )
+drag( 0 )
+drop( "" )
+drop( 0 )
+expandPath( "" )
+expandRow( 0 )
+node( "" )
+node( 0 )
+requireNoSelection()
+requireSelection( 0, 0, ... )
+requireSelection( "", "", ... )
+rightClickPath( "" )
+rightClickRow( 0 )
+selectPath( "" )
+selectPaths( "", "", ... )
+selectRow( 0 )
+selectRows( 0, 0, ... )
+showPopupMenuAt( 0 )
+showPopupMenuAt( "" )
+valueAt( 0 ) : String
+valueAt( "" ) : String
+
+------------------------
+
+[Table]
+
+cell( Pattern ): TableCell
+cell( String ): TableCell
+click( TableCell, MouseButton )
+contents(): String[][]
+columnIndexFor( "columnName" )
+drag( TableCell )
+drag( TableCell )
+enterValue( TableCell, String )
+foregroundAt( TableCell )
+requireCellValue( TableCell, Pattern )
+requireCellValue( TableCell, String )
+requireColumnCount( 0 )
+requireContents( String[][] ) <<
+requireSelectRows( 0, 0, ... ) <<
+foregroundAt( TableCell )
+rowCount()
+selectCell( TableCell )
+selectCells( TableCell, TableCell, ... )
+selectionValue(): string
+selectRows( 0, 0, ... )
+valueAt( TableCell )
+
+------------------------
