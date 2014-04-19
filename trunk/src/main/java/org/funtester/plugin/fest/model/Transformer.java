@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 
 import org.funtester.common.semantic.SemanticTestSuite;
 import org.funtester.common.util.FileUtil;
+import org.funtester.common.util.TextFileUtil;
 import org.funtester.plugin.report.testng.TestNGXmlGenerator;
 
 public class Transformer {
@@ -163,7 +164,7 @@ public class Transformer {
 			String className = e.getKey();
 			String fileName = FileUtil.makeFileName( outputDirectory, className + JAVA_FILE_EXTENSION );
 			fileNames.add( fileName );
-			FileUtil.saveContentToFile( e.getValue().toString(), fileName );
+			TextFileUtil.saveContent( e.getValue().toString(), fileName );
 		}		
 		return fileNames;
 	}	
@@ -178,7 +179,7 @@ public class Transformer {
 		Map< String, StringBuilder > xmlContent = xmlGen.generate( packageName, suite );
 		String fileName = FileUtil.makeFileName( outputDirectory,
 				TestNGXmlGenerator.FILE_NAME );
-		FileUtil.saveContentToFile(
+		TextFileUtil.saveContent(
 				xmlContent.get( suite.getName() ).toString(), fileName );
 	}
 }

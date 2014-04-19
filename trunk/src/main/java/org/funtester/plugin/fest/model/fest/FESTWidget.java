@@ -7,7 +7,7 @@ public class FESTWidget {
 	//
 	// WIDGETS
 	// textBox, comboBox, checkBox, radioButton, button, menuItem, table, list
-	//
+	// tree
 	
 	public static String textBox(final String name) {
 		return "textBox( \"" + name + "\" )";
@@ -50,8 +50,12 @@ public class FESTWidget {
 	public static String table(final String name) {
 		return "table( \"" + name + "\" )";
 	}
-		
+	
 	public static String list(final String name) {
 		return "list( \"" + name + "\" )";
+	}
+	
+	public static String tree(final String name) {
+		return "tree( \"" + name + "\" )";
 	}
 }
