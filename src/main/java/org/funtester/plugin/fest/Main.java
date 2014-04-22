@@ -23,7 +23,6 @@ import org.funtester.common.util.ArgUtil;
 import org.funtester.common.util.CommandRunner;
 import org.funtester.common.util.SourceCodeReader;
 import org.funtester.common.util.TimeConverter;
-import org.funtester.plugin.fest.json.JsonMapper;
 import org.funtester.plugin.fest.model.FestSwingCodeGenerator;
 import org.funtester.plugin.fest.model.JsonSemanticTestSuiteRepository;
 import org.funtester.plugin.fest.model.JsonTestExecutionReportRepository;
@@ -48,8 +47,8 @@ import org.testng.log4testng.Logger;
 public class Main {
 	
 	public static final String APP = "funtester-ext-fest";
-	public static final String NAME = "FunTester plugin for FEST";
-	public static final String VERSION = "1.0";
+	public static final String NAME = "FEST plugin for FunTester";
+	public static final String VERSION = "0.7";
 	
 	private static final Logger logger = Logger.getLogger( Main.class ); // TestNG Logger
 	
