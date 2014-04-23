@@ -21,6 +21,7 @@ import org.funtester.common.semantic.SemanticTestMethod;
 import org.funtester.common.semantic.SemanticTestSuite;
 import org.funtester.common.util.ArgUtil;
 import org.funtester.common.util.CommandRunner;
+import org.funtester.common.util.SimpleTimer;
 import org.funtester.common.util.SourceCodeReader;
 import org.funtester.common.util.TimeConverter;
 import org.funtester.plugin.fest.model.FestSwingCodeGenerator;
@@ -64,6 +65,18 @@ public class Main {
 	private static final int LINE_MAX = 79;
 	
 	
+	private static final String TOTAL_TIMER = "total";
+	private static final String TEST_EXECUTION_TIMER = "test_execution";
+	private static final String READ_TESTS_TIMER = "read_tests";
+	private static final String CODE_GENERATION_TIMER = "code_generation";
+	private static final String READ_REPORT_TIMER = "read_report";
+	private static final String ANALYSIS_TIMER = "analysis";
+	private static final String GENERATE_REPORT_TIMER = "generate_report";
+	
+	
+	
+	
+	
 	private static final void terminate() {
 		out( "Finished." );
 		printFooter();
@@ -87,9 +100,9 @@ public class Main {
 	}
 	
 	synchronized public static void printHeader() {
-		final String CONTENT = NAME + " - v" + VERSION;		
+		final String content = NAME + " - v" + VERSION;
 		final String line = makeLine( LINE_MAX );
-		out( line + "\n" + CONTENT + "\n" + line );
+		out( line + "\n" + content + "\n" + line );
 	}
 	
 	synchronized public static void printFooter() {
@@ -121,11 +134,14 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		
 		boolean isToGenerateTestSourceCode = true;
 		boolean isToRunTests = true;
 		
-		// Save the start time		
-		final long START_TIME = System.currentTimeMillis();
+		SimpleTimer timer = new SimpleTimer();
+		
+		// Save the start time
+		timer.start( TOTAL_TIMER );
 		
 		File f = new File( Main.class.getProtectionDomain()
 				.getCodeSource().getLocation().getPath() );
@@ -179,6 +195,8 @@ public class Main {
 		// Reading the configuration file
 		//
 		
+		out( "Reading configuration file..." );
+		
 		TestGenerationConfigurationRepository configurationRepository =
 			createConfigurationRepository( fileName );
 		
@@ -195,7 +213,9 @@ public class Main {
 		// Reading the semantic test file
 		//
 		
-		final long SOURCE_GENERATION_START_TIME = System.currentTimeMillis();
+		out( "Reading abstract tests file..." );
+		
+		timer.start( READ_TESTS_TIMER );
 		
 		SemanticTestSuiteRepository semanticTestSuiteRepository =
 			createSemanticTestSuiteRepository( cfg.getSemanticTestFile() );
@@ -207,7 +227,10 @@ public class Main {
 			err( "> Error reading the semantic test file '" + cfg.getSemanticTestFile() + "'. Details:\n" );
 			e1.printStackTrace();
 			terminate();
-		}				
+		}
+		
+		timer.stop( READ_TESTS_TIMER );
+		
 		// logger.debug( System.getProperties() );
 		// logger.debug( "CLASSPATH is: \"" + System.getProperty( "java.class.path" ) + "\"" );
 		
@@ -216,37 +239,53 @@ public class Main {
 		//
 		
 		List< String > fileNames = new ArrayList< String >();
-		if ( isToGenerateTestSourceCode ) {			
+		if ( isToGenerateTestSourceCode ) {
+			
+			out( "Generating source code files..." );
+			
+			timer.start( CODE_GENERATION_TIMER );
+			
 			Transformer transformer = new Transformer();
 			try {
 				//transformer.transform( inputFilePath, outputDir, packageName );
-				fileNames.addAll( transformer.transform(
+				
+				List< String > files = transformer.transform(
 						semanticTestSuite,
 						cfg.getOutputDirectory(),
 						cfg.getMainClass(),
 						cfg.getPackageName(),
 						cfg.getTimeoutInMS()
-						) );
+						);
+				
+				fileNames.addAll( files );
+				
 			} catch ( TransformException e ) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return;
 			}
 			transformer = null; // force to destroy
+			
+			timer.stop( CODE_GENERATION_TIMER );
 		}
-		
-		final long SOURCE_GENERATION_TIME = System.currentTimeMillis() - SOURCE_GENERATION_START_TIME;
 		
 		//
 		// Executing the tests (using the commands)
 		//
 		
 		if ( isToRunTests ) {		
+			
 			final boolean isToRunCommands = cfg.getRun();
-			if ( isToRunCommands ) {		
+			
+			if ( isToRunCommands ) {
+				
 				if ( cfg.getCommandsToRun().size() < 1 ) {
 					out( "There are no commands to run." );
 				} else {
+					
+					out( "Running commands..." );
+					
+					timer.start( TEST_EXECUTION_TIMER );
+					
 					CommandRunner runner = new CommandRunner();
 					for ( String cmd : cfg.getCommandsToRun() ) {
 						try {
@@ -265,10 +304,13 @@ public class Main {
 							}
 						} // catch
 					} // for
+					
+					timer.stop( TEST_EXECUTION_TIMER );
+					
 				} // else
+				
 			} // if
 			
-					
 			
 			if ( cfg.getTryToRunInternally() ) {
 				
@@ -280,48 +322,114 @@ public class Main {
 			}
 		}
 		
-		out( "Reading report..." );
+
+		final String originalResultsFile = cfg.getOriginalResultsFile();
 		
-		final long ANALYSIS_START_TIME = System.currentTimeMillis();
-				
-		//
-		// Reading the XML report
-		//
+		final boolean originalReportFileExists =
+				( new File( originalResultsFile ) ).exists();
 		
-		TestExecutionReport report = null;		
-		XmlReader xmlReader = new XmlReader();
-		
-		if ( cfg.getTestingFramework().equalsIgnoreCase( "testng" ) ) {
-			TestNGXmlReportResult content = null;
-			try {			
-				//logger.debug( "Report is on " + cfg.getReportFile());
-				content = xmlReader.readObject2( cfg.getOriginalResultsFile(), TestNGXmlReportResult.class );
-			} catch ( Exception e ) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			logger.debug( "Do something with TESTNG !" );
-						
-			TestNGReportTransformer reportTransformer = new TestNGReportTransformer( cfg.getOriginalResultsFile() );
-			report = reportTransformer.transform( content );
+		if ( originalReportFileExists  ) {
 			
-		} else if ( cfg.getTestingFramework().equalsIgnoreCase( "junit" ) ) {
-			JUnitXmlReportTestSuite content = null;
-			try {			
-				content = xmlReader.readObject( cfg.getOriginalResultsFile(), JUnitXmlReportTestSuite.class );
-			} catch ( Exception e ) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			logger.debug( "Do something with JUNIT !" );
-		} else {
-			err( "Unknown reporting tool: " + cfg.getTestingFramework() );
+			out( "Reading original test report..." );
+			
+			// Reading the XML report
+			
+			timer.start( READ_REPORT_TIMER );
+			
+			logger.info( "Reading the original report file (" + originalResultsFile + ")..." );
+			
+			TestExecutionReport report = readExecutionReport(
+					cfg.getTestingFramework(),
+					originalResultsFile
+					);
+			
+			timer.stop( READ_REPORT_TIMER );
+			
+			
+			// Analyzing the report
+			
+			logger.info( "Analyzing the report..." );
+			
+			timer.start( ANALYSIS_TIMER );
+			
+			analyzeReport( semanticTestSuite, fileNames, report );
+			
+			timer.stop( ANALYSIS_TIMER );
+			
+			
+			// Converting the report to a JSON file
+			
+			logger.info( "Converting results to FunTester Report format (" + cfg.getConvertedResultsFile() + "..." );
+			
+			timer.start( GENERATE_REPORT_TIMER );
+			
+			convertReportFile( cfg.getConvertedResultsFile(), report );
+			
+			timer.stop( GENERATE_REPORT_TIMER );
 		}
+		
+		//
+		// TIMES
+		//
+
+		out( "" );
+		out( makeLine( LINE_MAX ) );
+		
+		timer.stop( TOTAL_TIMER );
+		
+		int av = -30;
+		
+		
+		if ( timer.has( READ_TESTS_TIMER ) ) {
+			out( align( av, "Abstract tests read time" ) + ": " + formatTime( timer.timeFor( READ_TESTS_TIMER ) ) );
+		}
+		
+		if ( timer.has( TEST_EXECUTION_TIMER ) ) {
+			out( align( av, "Test execution time" ) + ": " + formatTime( timer.timeFor( TEST_EXECUTION_TIMER ) ) );
+		}
+		
+		if ( timer.has( CODE_GENERATION_TIMER ) ) {
+			out( align( av, "Source code generation time" ) + ": " + formatTime( timer.timeFor( CODE_GENERATION_TIMER ) ) );
+		}
+		
+		if ( timer.has( READ_REPORT_TIMER )  ) {
+			out( align( av, "Report read time" ) + ": " + formatTime( timer.timeFor( READ_REPORT_TIMER ) ) );
+		}
+		
+		if ( timer.has( ANALYSIS_TIMER ) ) {
+			out( align( av, "Analysis time" ) + ": " + formatTime( timer.timeFor( ANALYSIS_TIMER ) ) );
+		}
+		
+		if ( timer.has( GENERATE_REPORT_TIMER )  ) {
+			out( align( av, "Report generation time" ) + ": " + formatTime( timer.timeFor( GENERATE_REPORT_TIMER ) ) );
+		}
+		
+		out( align( av, "Total execution time " ) + ": " + formatTime( timer.timeFor( TOTAL_TIMER ) ) );
+		
+		terminate();
+	}
 	
-				
-		//
-		// Analyzing the report
-		//
+	
+	private static String formatTime(Long time) {
+		int alignmentSize = 6;
+		if ( null == time ) {
+			return TimeConverter.toHMS( 0 ) + " (" + align( alignmentSize, "0" ) + " ms)";	
+		}
+		return TimeConverter.toHMS( time ) + " (" + align( alignmentSize, time.toString() ) + " ms)";
+	}
+	
+	
+	private static String align(final int alignmentSize, final String description) {
+		return String.format( "%" + alignmentSize + "s", description );
+	}
+	
+	
+
+	private static void analyzeReport(
+			SemanticTestSuite semanticTestSuite,
+			List< String > fileNames,
+			TestExecutionReport report
+			) {
 		
 		final String idCommentToFind =
 				FestSwingCodeGenerator.SEMANTIC_STEP_ID_COMMENT_START +
@@ -354,6 +462,9 @@ public class Main {
 							continue; // It is not the file
 						}						
 						logger.debug( "Found file: " + name );
+						
+						
+						fName = fName.replaceAll( "\\\\", "/" );
 						
 						method.setErroneousFile( fName ); // Set the file
 						
@@ -458,38 +569,57 @@ public class Main {
 				} // for method
 			} // for testCase 
 		} // for suite
+	}
+
+	private static TestExecutionReport readExecutionReport(
+			final String testingFramework,
+			final String originalResultsFile
+			) {
+		TestExecutionReport report = null;		
+		XmlReader xmlReader = new XmlReader();
 		
-		logger.info( "Converting results to JSON..." );
-		
-		//
-		// Converting the report to a JSON file
-		//
-		
+		if ( testingFramework.equalsIgnoreCase( "testng" ) ) {
+			TestNGXmlReportResult content = null;
+			try {			
+				//logger.debug( "Report is on " + cfg.getReportFile());
+				content = xmlReader.readObject2( originalResultsFile, TestNGXmlReportResult.class );
+			} catch ( Exception e ) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			logger.debug( "Do something with TESTNG !" );
+						
+			TestNGReportTransformer reportTransformer = new TestNGReportTransformer( originalResultsFile );
+			report = reportTransformer.transform( content );
+			
+		} else if ( testingFramework.equalsIgnoreCase( "junit" ) ) {
+			JUnitXmlReportTestSuite content = null;
+			try {			
+				content = xmlReader.readObject( originalResultsFile, JUnitXmlReportTestSuite.class );
+			} catch ( Exception e ) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			logger.debug( "Do something with JUNIT !" );
+		} else {
+			err( "Unknown reporting tool: " + testingFramework );
+		}
+		return report;
+	}
+
+	private static void convertReportFile(
+			final String fileName,
+			final TestExecutionReport report
+			) {
 		TestExecutionReportRepository reportRepository =
-				new JsonTestExecutionReportRepository( cfg.getConvertedResultsFile() );
+				new JsonTestExecutionReportRepository( fileName );
 				
 		try {
 			reportRepository.save( report );
 		} catch ( Exception e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}				
-		
-		final long ANALYSIS_EXECUTION_TIME = System.currentTimeMillis() - ANALYSIS_START_TIME;
-		final long EXECUTION_TIME = System.currentTimeMillis() - START_TIME;
-		
-		if ( isToGenerateTestSourceCode ) {
-			out( "Source code generation time\t\t: " + TimeConverter.toHMS( SOURCE_GENERATION_TIME )
-				+ " (" + SOURCE_GENERATION_TIME + " ms)" );
 		}
-		
-		out( "Analysis and convertion execution time\t: " + TimeConverter.toHMS( ANALYSIS_EXECUTION_TIME )
-				+ " (" + ANALYSIS_EXECUTION_TIME + " ms)" );
-		
-		out( "Total execution time\t\t\t: " + TimeConverter.toHMS( EXECUTION_TIME )
-				+ " (" + EXECUTION_TIME + " ms)" );
-		
-		terminate();
 	}
 
 	private static String extractClassNameWithoutPackage(final String className) {
