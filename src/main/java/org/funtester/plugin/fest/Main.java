@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.funtester.common.at.AbstractTestCase;
+import org.funtester.common.at.AbstractTestMethod;
+import org.funtester.common.at.AbstractTestSuite;
 import org.funtester.common.generation.TestGenerationConfiguration;
 import org.funtester.common.generation.TestGenerationConfigurationRepository;
 import org.funtester.common.report.TestCaseExecution;
@@ -16,21 +19,18 @@ import org.funtester.common.report.TestExecutionReportRepository;
 import org.funtester.common.report.TestExecutionStatus;
 import org.funtester.common.report.TestMethodExecution;
 import org.funtester.common.report.TestSuiteExecution;
-import org.funtester.common.semantic.SemanticTestCase;
-import org.funtester.common.semantic.SemanticTestMethod;
-import org.funtester.common.semantic.SemanticTestSuite;
 import org.funtester.common.util.ArgUtil;
 import org.funtester.common.util.CommandRunner;
 import org.funtester.common.util.SimpleTimer;
 import org.funtester.common.util.SourceCodeReader;
 import org.funtester.common.util.TimeConverter;
 import org.funtester.plugin.fest.model.FestSwingCodeGenerator;
-import org.funtester.plugin.fest.model.JsonSemanticTestSuiteRepository;
-import org.funtester.plugin.fest.model.JsonTestExecutionReportRepository;
-import org.funtester.plugin.fest.model.JsonTestGenerationConfigurationRepository;
-import org.funtester.plugin.fest.model.SemanticTestSuiteRepository;
 import org.funtester.plugin.fest.model.TransformException;
 import org.funtester.plugin.fest.model.Transformer;
+import org.funtester.plugin.fest.model.at.AbstractTestSuiteRepository;
+import org.funtester.plugin.fest.model.at.JsonAbstractTestSuiteRepository;
+import org.funtester.plugin.fest.model.configuration.JsonTestGenerationConfigurationRepository;
+import org.funtester.plugin.fest.model.report.JsonTestExecutionReportRepository;
 import org.funtester.plugin.fest.xml.XmlReader;
 import org.funtester.plugin.report.junit.JUnitXmlReportTestSuite;
 import org.funtester.plugin.report.testng.TestNGReportTransformer;
@@ -71,9 +71,7 @@ public class Main {
 	private static final String CODE_GENERATION_TIMER = "code_generation";
 	private static final String READ_REPORT_TIMER = "read_report";
 	private static final String ANALYSIS_TIMER = "analysis";
-	private static final String GENERATE_REPORT_TIMER = "generate_report";
-	
-	
+	private static final String GENERATE_REPORT_TIMER = "generate_report"; 
 	
 	
 	
@@ -217,10 +215,10 @@ public class Main {
 		
 		timer.start( READ_TESTS_TIMER );
 		
-		SemanticTestSuiteRepository semanticTestSuiteRepository =
+		AbstractTestSuiteRepository semanticTestSuiteRepository =
 			createSemanticTestSuiteRepository( cfg.getSemanticTestFile() );
 		
-		SemanticTestSuite semanticTestSuite = null;
+		AbstractTestSuite semanticTestSuite = null;
 		try {
 			semanticTestSuite = semanticTestSuiteRepository.first();
 		} catch ( Exception e1 ) {
@@ -411,11 +409,14 @@ public class Main {
 	
 	
 	private static String formatTime(Long time) {
-		int alignmentSize = 6;
+		int hmsSize = 6;
+		int msSize = 36;
+		
 		if ( null == time ) {
-			return TimeConverter.toHMS( 0 ) + " (" + align( alignmentSize, "0" ) + " ms)";	
+			return TimeConverter.toHMS( 0 ) + " (" + align( hmsSize, "0" ) + " ms)";	
 		}
-		return TimeConverter.toHMS( time ) + " (" + align( alignmentSize, time.toString() ) + " ms)";
+		
+		return TimeConverter.toHMS( time ) + align( msSize, time.toString() ) + " ms";
 	}
 	
 	
@@ -426,7 +427,7 @@ public class Main {
 	
 
 	private static void analyzeReport(
-			SemanticTestSuite semanticTestSuite,
+			AbstractTestSuite semanticTestSuite,
 			List< String > fileNames,
 			TestExecutionReport report
 			) {
@@ -538,10 +539,10 @@ public class Main {
 						logger.debug( ">>>>>>>>>>>>>>>>>>>>>>>>> Exception class compatible!" );
 					
 						final String testCaseName = extractClassNameWithoutPackage( testCase.getClassName() );					
-						SemanticTestCase semanticTestCase =
+						AbstractTestCase semanticTestCase =
 							semanticTestSuite.testCaseWithName( testCaseName );
 						if ( semanticTestCase != null ) {
-							SemanticTestMethod semanticTestMethod =
+							AbstractTestMethod semanticTestMethod =
 								semanticTestCase.testMethodWithName( method.getName() );
 							if ( semanticTestMethod != null ) {
 								// Expected FAIL and really FAIL -> PASS !
@@ -635,9 +636,9 @@ public class Main {
 		return new JsonTestGenerationConfigurationRepository( fileName );
 	}
 
-	private static SemanticTestSuiteRepository createSemanticTestSuiteRepository(
+	private static AbstractTestSuiteRepository createSemanticTestSuiteRepository(
 			final String fileName) {
-		return new JsonSemanticTestSuiteRepository( fileName );
+		return new JsonAbstractTestSuiteRepository( fileName );
 	}
 
 }

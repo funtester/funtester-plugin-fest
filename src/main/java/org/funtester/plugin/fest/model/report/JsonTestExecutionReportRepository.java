@@ -1,9 +1,15 @@
-package org.funtester.plugin.fest.model;
+package org.funtester.plugin.fest.model.report;
 
 import org.funtester.common.report.TestExecutionReport;
 import org.funtester.common.report.TestExecutionReportRepository;
 import org.funtester.plugin.fest.json.JsonMapper;
 
+/**
+ * JSON repository for a {@link TestExecutionReport}.
+ * 
+ * @author Thiago Delgado Pinto
+ *
+ */
 public class JsonTestExecutionReportRepository implements
 		TestExecutionReportRepository {
 	
