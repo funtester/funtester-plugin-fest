@@ -1,9 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	
 	<groupId>org.funtester</groupId>
 	<artifactId>funtester-plugin-fest</artifactId>
 	<version>0.7</version>
+	
 	<name>FEST Plugin for FunTester</name>
 	<description>Generate tests for FEST with TestNG or JUnit</description>
 
@@ -58,6 +60,11 @@
 
 		</plugins>
 	</build>
+	
+	
+	<properties>
+		<funtesterVersion>0.7a</funtesterVersion>
+	</properties>
 
 
 	<dependencies>
@@ -66,14 +73,14 @@
 		<dependency>
 			<groupId>org.funtester</groupId>
 			<artifactId>funtester-common</artifactId>
-			<version>1.0</version>
+			<version>${funtesterVersion}</version>
 		</dependency>
 
 		<!--  FunTester Plugin Common -->
 		<dependency>
 			<groupId>org.funtester</groupId>
 			<artifactId>funtester-plugin-common</artifactId>
-			<version>1.0</version>
+			<version>${funtesterVersion}</version>
 		</dependency>
 
 		<!-- Jackson (JSON) -->

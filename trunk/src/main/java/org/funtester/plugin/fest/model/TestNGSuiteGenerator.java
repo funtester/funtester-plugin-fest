@@ -3,8 +3,8 @@ package org.funtester.plugin.fest.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.funtester.common.semantic.SemanticTestCase;
-import org.funtester.common.semantic.SemanticTestSuite;
+import org.funtester.common.at.AbstractTestCase;
+import org.funtester.common.at.AbstractTestSuite;
 import org.testng.xml.XmlClass;
 import org.testng.xml.XmlSuite;
 import org.testng.xml.XmlTest;
@@ -14,7 +14,7 @@ public class TestNGSuiteGenerator {
 	private static final String TEST_NAME = "funtester";
 	
 	public XmlSuite generate(
-			final SemanticTestSuite suite,
+			final AbstractTestSuite suite,
 			final String packageName
 			) {
 		XmlSuite xmlSuite = new XmlSuite();		
@@ -23,7 +23,7 @@ public class TestNGSuiteGenerator {
 		XmlTest xmlTest = new XmlTest( xmlSuite );
 		xmlTest.setName( TEST_NAME );
 		List< XmlClass > xmlClassList = new ArrayList< XmlClass >(); 
-		for ( SemanticTestCase stc : suite.getTestCases() ) {
+		for ( AbstractTestCase stc : suite.getTestCases() ) {
 			String className = makeClassName( packageName, stc.getName() );
 			System.out.println( "className is: " + className );
 			/*

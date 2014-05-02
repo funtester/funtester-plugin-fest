@@ -9,15 +9,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.funtester.common.semantic.SemanticActionStep;
-import org.funtester.common.semantic.SemanticDatabaseConnection;
-import org.funtester.common.semantic.SemanticDatabaseScript;
-import org.funtester.common.semantic.SemanticElement;
-import org.funtester.common.semantic.SemanticOracleStep;
-import org.funtester.common.semantic.SemanticStep;
-import org.funtester.common.semantic.SemanticTestCase;
-import org.funtester.common.semantic.SemanticTestMethod;
-import org.funtester.common.semantic.SemanticTestSuite;
+import org.funtester.common.at.AbstractTestActionStep;
+import org.funtester.common.at.AbstractTestDatabaseConnection;
+import org.funtester.common.at.AbstractTestDatabaseScript;
+import org.funtester.common.at.AbstractTestElement;
+import org.funtester.common.at.AbstractTestOracleStep;
+import org.funtester.common.at.AbstractTestStep;
+import org.funtester.common.at.AbstractTestCase;
+import org.funtester.common.at.AbstractTestMethod;
+import org.funtester.common.at.AbstractTestSuite;
 import org.funtester.common.util.StringUtil;
 import org.funtester.plugin.code.java.JavaSyntax;
 import org.funtester.plugin.fest.model.fest.FESTAction;
@@ -85,7 +85,7 @@ public class FestSwingCodeGenerator {
 	 * @throws CodeGenerationException 
 	 */
 	public Map< String, StringBuilder > generate(
-			final SemanticTestSuite suite,
+			final AbstractTestSuite suite,
 			final String mainClass,
 			final String sourceCodePackage,
 			final int timeoutToBeVisibleInMS
@@ -99,19 +99,19 @@ public class FestSwingCodeGenerator {
 		//logger.debug( suite.getTestCases().get( 0 ).getTestMethods().size() );
 		//logger.debug( suite.getTestCases().get( 1 ).getTestMethods().size() );
 		
-		final List< SemanticTestCase > testCases = suite.getTestCases();
-		for ( SemanticTestCase testCase : testCases ) {			
+		final List< AbstractTestCase > testCases = suite.getTestCases();
+		for ( AbstractTestCase testCase : testCases ) {			
 			// IMPORTANT: The className is the file name too!		
 			String className = testCase.getName();
 			
 			boolean initialPartGenerated = false;
 			StringBuilder sb = new StringBuilder();						
 								
-			final List< SemanticTestMethod > testMethods = testCase.getTestMethods();
+			final List< AbstractTestMethod > testMethods = testCase.getTestMethods();
 			logger.debug( "methods size is " + testMethods.size() );
 			int i = 0;				
 			
-			for ( SemanticTestMethod testMethod : testMethods ) {			
+			for ( AbstractTestMethod testMethod : testMethods ) {			
 		
 				// Map a use case id to its screen variable (used by its steps)
 				Map< Long, FixtureInfo > screenMap = new TreeMap< Long, FixtureInfo >();
@@ -120,14 +120,14 @@ public class FestSwingCodeGenerator {
 				logger.debug( "method " + i++ + " is " + testMethod.toString() );
 				boolean methodGenerated = false;
 				
-				final List< SemanticStep > steps = testMethod.getSteps();
+				final List< AbstractTestStep > steps = testMethod.getSteps();
 				logger.debug( "steps size is " + steps.size() );
 				int stepCount = 0;
 				
 				//int fixtureVarIndex = -1;
 				
 				long lastUseCaseId = -1;
-				for ( SemanticStep step : steps ) {
+				for ( AbstractTestStep step : steps ) {
 					
 					final long CURRENT_USE_CASE_ID = ( step.getUseCaseId() >= 0 )
 						? step.getUseCaseId()
@@ -168,9 +168,9 @@ public class FestSwingCodeGenerator {
 																														
 					
 					// Oracle Step
-					if ( step instanceof SemanticOracleStep ) {	
+					if ( step instanceof AbstractTestOracleStep ) {	
 						
-						SemanticOracleStep oracleStep = (SemanticOracleStep) step;
+						AbstractTestOracleStep oracleStep = (AbstractTestOracleStep) step;
 						
 						String [] messages = oracleStep.getMessages().toArray( new String[0] );
 						String regEx = "";
@@ -194,7 +194,7 @@ public class FestSwingCodeGenerator {
 					}
 					// ActionStep
 					else {
-						SemanticActionStep actionStep = (SemanticActionStep) step;								
+						AbstractTestActionStep actionStep = (AbstractTestActionStep) step;								
 						
 						int numberOfElements = actionStep.numberOfElements();					
 						if ( numberOfElements > 0  && ! initialPartGenerated ) {
@@ -284,7 +284,7 @@ public class FestSwingCodeGenerator {
 										stepId
 										) );	
 							} else {
-								for ( SemanticElement se : actionStep.getElements() ) {
+								for ( AbstractTestElement se : actionStep.getElements() ) {
 									sb.append( genCallFromElement( fixtureInfo.fixtureVar, ACTION_NAME, se, ssid, stepId ) );		
 								}
 							}
@@ -297,7 +297,7 @@ public class FestSwingCodeGenerator {
 							logger.debug( "actionStep" + ( actionStep != null ? " not null" : "null" ) );
 							logger.debug( "actionStep.getElements()" + ( actionStep != null && actionStep.getElements() != null ? " not null" : "null" ) );
 							
-							SemanticElement firstSE = actionStep.getElements().get( 0 );
+							AbstractTestElement firstSE = actionStep.getElements().get( 0 );
 							logger.debug( "firstSE" + ( firstSE != null ? " not null" : "null" ) );
 							
 							String call = genCallFromElement( fixtureInfo.fixtureVar, ACTION_NAME, firstSE, ssid, stepId );
@@ -341,19 +341,19 @@ public class FestSwingCodeGenerator {
 
 
 	private void makeFixtureInfoList(
-			final SemanticTestMethod testMethod,
+			final AbstractTestMethod testMethod,
 			final Map< Long, FixtureInfo > screenMap
 			) {
 //		List< FixtureInfo > list = new ArrayList< FixtureInfo >();
-		final List< SemanticStep > allSteps = testMethod.getSteps();
+		final List< AbstractTestStep > allSteps = testMethod.getSteps();
 		
 		Map< String, Integer > counterMap = new HashMap< String, Integer >();
 		
-		for ( final SemanticStep step : allSteps ) {
+		for ( final AbstractTestStep step : allSteps ) {
 			// Only the SHOW action
 			if ( FESTActionQuery.isShowAction( step.getActionName() ) ) {
-				final SemanticActionStep actionStep = (SemanticActionStep) step;
-				final SemanticElement firstElement = actionStep.getElements().get( 0 );
+				final AbstractTestActionStep actionStep = (AbstractTestActionStep) step;
+				final AbstractTestElement firstElement = actionStep.getElements().get( 0 );
 				
 				final String INTERNAL_NAME = firstElement.getInternalName();
 
@@ -398,7 +398,7 @@ public class FestSwingCodeGenerator {
 			final Collection< String > includeFiles,
 			final String mainClass,
 			final String sourceCodePackage,
-			final SemanticTestCase testCase,
+			final AbstractTestCase testCase,
 			final String className,
 			final Map< Long, FixtureInfo > screenMap,
 			final long ssid,
@@ -555,12 +555,12 @@ public class FestSwingCodeGenerator {
 	}
 
 	
-	private Map< String, SemanticDatabaseConnection > extractConnections(
-			final List< SemanticDatabaseScript > scripts
+	private Map< String, AbstractTestDatabaseConnection > extractConnections(
+			final List< AbstractTestDatabaseScript > scripts
 			) {
-		Map< String, SemanticDatabaseConnection > map =
-			new HashMap< String, SemanticDatabaseConnection >();
-		for ( SemanticDatabaseScript script : scripts ) {
+		Map< String, AbstractTestDatabaseConnection > map =
+			new HashMap< String, AbstractTestDatabaseConnection >();
+		for ( AbstractTestDatabaseScript script : scripts ) {
 			final String connectionName = script.getConnection().getName();
 			if ( ! map.containsKey( connectionName ) ) {
 				map.put( connectionName, script.getConnection() );
@@ -581,7 +581,7 @@ public class FestSwingCodeGenerator {
 	private String genCallFromElementList(
 			final String variable,
 			final String actionName,
-			final List< SemanticElement > elements,
+			final List< AbstractTestElement > elements,
 			final long ssid,
 			final long stepId
 			) {
@@ -615,7 +615,7 @@ public class FestSwingCodeGenerator {
 		else if ( FESTActionQuery.isPressAction( actionName ) ) {
 			found = true;
 			List< String > list = new ArrayList< String >();
-			for ( SemanticElement element : elements ) {
+			for ( AbstractTestElement element : elements ) {
 				list.add( element.getInternalName() );
 			}			
 			sb.append( variable )
@@ -629,7 +629,7 @@ public class FestSwingCodeGenerator {
 		}
 						
 		
-		for ( SemanticElement element : elements ) {	
+		for ( AbstractTestElement element : elements ) {	
 			sb.append( genCallFromElement( variable, actionName, element, ssid, stepId ) );
 		}
 		return sb.toString();
@@ -639,7 +639,7 @@ public class FestSwingCodeGenerator {
 	private String genCallFromElement(
 			final String variable,
 			final String actionName,
-			final SemanticElement element,
+			final AbstractTestElement element,
 			final long ssid,
 			final long stepId
 			) {

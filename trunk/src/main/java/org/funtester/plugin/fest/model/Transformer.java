@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.funtester.common.semantic.SemanticTestSuite;
+import org.funtester.common.at.AbstractTestSuite;
 import org.funtester.common.util.FileUtil;
 import org.funtester.common.util.TextFileUtil;
 import org.funtester.plugin.report.testng.TestNGXmlGenerator;
@@ -17,7 +17,7 @@ public class Transformer {
 	private static final String JAVA_FILE_EXTENSION = ".java";
 
 	public List< String > transform(
-			final SemanticTestSuite suite,
+			final AbstractTestSuite suite,
 			final String baseOutputDirectory,
 			final String mainClass,
 			final String packageName,
@@ -144,7 +144,7 @@ public class Transformer {
 	}
 	
 	private List< String > generateCode(
-			final SemanticTestSuite suite,
+			final AbstractTestSuite suite,
 			final String outputDirectory,
 			final String mainClass,
 			final String packageName,
@@ -171,7 +171,7 @@ public class Transformer {
 	
 	
 	private void generateConfiguration(
-			final SemanticTestSuite suite,
+			final AbstractTestSuite suite,
 			final String outputDirectory,
 			final String packageName
 			) throws IOException {		
