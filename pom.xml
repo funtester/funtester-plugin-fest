@@ -4,10 +4,14 @@
 	
 	<groupId>org.funtester</groupId>
 	<artifactId>funtester-plugin-fest</artifactId>
-	<version>0.7</version>
+	<version>0.7.1</version>
 	
 	<name>FEST Plugin for FunTester</name>
 	<description>Generate tests for FEST with TestNG or JUnit</description>
+	
+	<properties>
+		<funtesterVersion>0.7c</funtesterVersion>
+	</properties>
 
 	<build>
 		<plugins>
@@ -60,11 +64,6 @@
 
 		</plugins>
 	</build>
-	
-	
-	<properties>
-		<funtesterVersion>0.7a</funtesterVersion>
-	</properties>
 
 
 	<dependencies>

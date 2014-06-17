@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.funtester.common.at.AbstractTestSuite;
-import org.funtester.common.util.FileUtil;
+import org.funtester.common.util.FilePathUtil;
 import org.funtester.common.util.TextFileUtil;
 import org.funtester.plugin.report.testng.TestNGXmlGenerator;
 
@@ -140,7 +140,7 @@ public class Transformer {
 			final String packageName
 			) {
 		String packageDirs = packageName.replace( ".", File.separator );
-		return FileUtil.directoryWithSeparator( baseDir ) + packageDirs;
+		return FilePathUtil.directoryWithSeparator( baseDir ) + packageDirs;
 	}
 	
 	private List< String > generateCode(
@@ -162,7 +162,7 @@ public class Transformer {
 				suite, mainClass, packageName, timeoutToBeVisibleInMS );
 		for ( Entry< String, StringBuilder > e : codeContent.entrySet() ) {
 			String className = e.getKey();
-			String fileName = FileUtil.makeFileName( outputDirectory, className + JAVA_FILE_EXTENSION );
+			String fileName = FilePathUtil.makeFileName( outputDirectory, className + JAVA_FILE_EXTENSION );
 			fileNames.add( fileName );
 			TextFileUtil.saveContent( e.getValue().toString(), fileName );
 		}		
@@ -177,7 +177,7 @@ public class Transformer {
 			) throws IOException {		
 		TestNGXmlGenerator xmlGen = new TestNGXmlGenerator();
 		Map< String, StringBuilder > xmlContent = xmlGen.generate( packageName, suite );
-		String fileName = FileUtil.makeFileName( outputDirectory,
+		String fileName = FilePathUtil.makeFileName( outputDirectory,
 				TestNGXmlGenerator.FILE_NAME );
 		TextFileUtil.saveContent(
 				xmlContent.get( suite.getName() ).toString(), fileName );
