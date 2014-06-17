@@ -49,7 +49,7 @@ public class Main {
 	
 	public static final String APP = "funtester-ext-fest";
 	public static final String NAME = "FEST plugin for FunTester";
-	public static final String VERSION = "0.7";
+	public static final String VERSION = "0.7.1";
 	
 	private static final Logger logger = Logger.getLogger( Main.class ); // TestNG Logger
 	
